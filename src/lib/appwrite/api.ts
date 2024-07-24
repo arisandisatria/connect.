@@ -388,3 +388,45 @@ export async function searchPosts(searchTerm: string) {
     console.log(error);
   }
 }
+
+export async function getUsers(limit?: number) {
+  try {
+    const queries = [Query.orderDesc("$createdAt")];
+
+    if (limit) {
+      queries.push(Query.limit(limit));
+    }
+
+    const users = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      queries
+    );
+
+    if (!users) throw Error;
+
+    return users;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function getSavedPosts() {
+  try {
+    const currentAccount = await getCurrentUser();
+
+    if (!currentAccount) throw Error;
+
+    const savedPosts = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.savesCollectionId,
+      [Query.equal("user", currentAccount.$id)]
+    );
+
+    if (!savedPosts) throw Error;
+
+    return savedPosts;
+  } catch (error) {
+    console.log(error);
+  }
+}
