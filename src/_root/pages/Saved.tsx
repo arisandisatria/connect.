@@ -1,7 +1,6 @@
 import GridPostList from "@/components/shared/GridPostList";
 import Loader from "@/components/shared/Loader";
 import { useGetSavedPosts } from "@/lib/react-query/queriesAndMutations";
-import { Models } from "appwrite";
 
 const Saved = () => {
   const { data: savedPosts, isPending: isSavedPostsLoading } =
