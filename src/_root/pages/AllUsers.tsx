@@ -25,12 +25,8 @@ const AllUsers = () => {
         ) : (
           <ul className="flex gap-12 flex-wrap w-full max-w-5xl">
             {creators?.documents.map((creator: Models.Document) => (
-              <li className="w-1/5">
-                <UserCard
-                  creator={creator}
-                  desc={creator.username}
-                  key={creator.$id}
-                />
+              <li className="w-1/5" key={creator.$id}>
+                <UserCard creator={creator} desc={creator.username} />
               </li>
             ))}
           </ul>

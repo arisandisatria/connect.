@@ -14,7 +14,7 @@ const UserCard = ({ creator, desc }: UserCardProps) => {
         alt="creator"
         width={54}
         height={54}
-        className="rounded-full"
+        className="rounded-full w-[54px] h-[54px] object-cover"
       />
 
       <div className="flex-center flex-col gap-0.5 mt-2.5">

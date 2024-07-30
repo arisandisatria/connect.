@@ -1,5 +1,11 @@
 import { ID, ImageGravity, Query } from "appwrite";
-import { INewPost, INewUser, IUpdatePost } from "@/types";
+import {
+  INewComment,
+  INewPost,
+  INewUser,
+  IUpdatePost,
+  IUpdateUser,
+} from "@/types";
 import { account, appwriteConfig, avatars, databases, storage } from "./config";
 
 export async function createUserAccount(user: INewUser) {
@@ -180,7 +186,7 @@ export function getFilePreview(fileId: string) {
   }
 }
 
-export async function deleteFile(fileId: string) {
+export async function deleteFile(fileId: string | any) {
   try {
     await storage.deleteFile(appwriteConfig.storageId, fileId);
 
@@ -426,6 +432,101 @@ export async function getSavedPosts() {
     if (!savedPosts) throw Error;
 
     return savedPosts;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function updateUser(user: IUpdateUser) {
+  const hasFileToUpdate = user.file.length > 0;
+  try {
+    let image = {
+      imageUrl: user.imageUrl,
+      imageId: user.imageId,
+    };
+
+    if (hasFileToUpdate) {
+      // Upload file to appwrite storage
+      const uploadedFile = await uploadFile(user.file[0]);
+
+      if (!uploadedFile) throw Error;
+
+      const fileUrl = getFilePreview(uploadedFile.$id);
+
+      if (!fileUrl) {
+        await deleteFile(uploadedFile.$id);
+        throw Error;
+      }
+
+      image = { ...image, imageUrl: fileUrl, imageId: uploadedFile.$id };
+    }
+
+    const updateUser = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      user.userId,
+      {
+        name: user.name,
+        username: user.username,
+        imageUrl: image.imageUrl,
+        imageId: image.imageId,
+        email: user.email,
+        bio: user.bio,
+      }
+    );
+
+    if (!updateUser) {
+      // Delete new file that has been recently uploaded
+      if (hasFileToUpdate) {
+        await deleteFile(user.imageId);
+      }
+
+      // If no new file uploaded, just throw error
+      throw Error;
+    }
+
+    if (hasFileToUpdate) {
+      await deleteFile(user.imageId);
+    }
+
+    return updateUser;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function createComment({ comment, userId, postId }: INewComment) {
+  try {
+    const newComment = await databases.createDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentCollectionId,
+      ID.unique(),
+      {
+        users: userId,
+        comment: comment,
+        posts: postId,
+      }
+    );
+
+    if (!newComment) throw Error;
+
+    return newComment;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function getComments() {
+  try {
+    const comments = await databases.listDocuments(
+      appwriteConfig.databaseId,
+      appwriteConfig.commentCollectionId,
+      [Query.orderDesc("$createdAt")]
+    );
+
+    if (!comments) throw Error;
+
+    return comments;
   } catch (error) {
     console.log(error);
   }

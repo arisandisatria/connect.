@@ -5,10 +5,12 @@ import {
   useInfiniteQuery,
 } from "@tanstack/react-query";
 import {
+  createComment,
   createPost,
   createUserAccount,
   deletePost,
   deleteSavedPost,
+  getComments,
   getCurrentUser,
   getInfinitePosts,
   getPostById,
@@ -21,8 +23,15 @@ import {
   signInAccount,
   signOutAccount,
   updatePost,
+  updateUser,
 } from "../appwrite/api";
-import { INewPost, INewUser, IUpdatePost } from "@/types";
+import {
+  INewComment,
+  INewPost,
+  INewUser,
+  IUpdatePost,
+  IUpdateUser,
+} from "@/types";
 import { QUERY_KEYS } from "./queryKeys";
 
 export const useCreateUserAccount = () => {
@@ -206,5 +215,25 @@ export const useGetSavedPosts = () => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
     queryFn: getSavedPosts,
+  });
+};
+
+export const useUpdateUser = () => {
+  return useMutation({
+    mutationFn: (user: IUpdateUser) => updateUser(user),
+  });
+};
+
+export const useCreateComment = () => {
+  return useMutation({
+    mutationFn: ({ comment, userId, postId }: INewComment) =>
+      createComment({ comment, userId, postId }),
+  });
+};
+
+export const useGetComments = () => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_COMMENTS],
+    queryFn: () => getComments(),
   });
 };

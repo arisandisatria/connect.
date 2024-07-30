@@ -17,7 +17,9 @@ export type IUpdateUser = {
   userId: string;
   name: string;
   bio: string;
-  imageId: string;
+  email: string;
+  username: string;
+  imageId?: string;
   imageUrl: URL | string;
   file: File[];
 };
@@ -46,6 +48,7 @@ export type IUser = {
   username: string;
   email: string;
   imageUrl: string;
+  imageId?: string;
   bio: string;
 };
 
@@ -54,4 +57,11 @@ export type INewUser = {
   email: string;
   username: string;
   password: string;
+};
+
+export type INewComment = {
+  // likes: number;
+  comment: string;
+  userId: string;
+  postId?: string;
 };

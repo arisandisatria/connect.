@@ -7,18 +7,27 @@ type GridPostListProps = {
   posts: Models.Document[] | undefined;
   showUser?: boolean;
   showStats?: boolean;
+  forProfile?: boolean;
 };
 
 const GridPostList = ({
   posts,
   showUser = true,
   showStats = true,
+  forProfile = false,
 }: GridPostListProps) => {
   const { user } = useUserContext();
 
+  const relatedPosts = posts?.filter((post) => {
+    const creatorId = post.creator?.$id || post.post?.creator?.$id;
+    return creatorId === user.id;
+  });
+
+  const showPosts = forProfile ? relatedPosts : posts;
+
   return (
     <ul className="grid-container">
-      {posts?.map((post) => (
+      {showPosts?.map((post) => (
         <li key={post.$id} className="relative min-w-80 h-80">
           <Link
             to={`/posts/${post.$id || post.post.$id}`}
@@ -30,7 +39,6 @@ const GridPostList = ({
               className="h-full w-full object-cover"
             />
           </Link>
-
           <div className="grid-post_user">
             {showUser && (
               <div className="flex items-center justify-start gap-2 flex-1">
