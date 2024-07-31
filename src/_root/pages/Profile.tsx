@@ -7,15 +7,15 @@ import {
   useGetCurrentUser,
   useGetPosts,
 } from "@/lib/react-query/queriesAndMutations";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 import { useNavigate } from "react-router-dom";
 
-export interface PostStatsInfoProps {
-  posts: number;
-  followers: number;
-  following: number;
-}
+// export interface PostStatsInfoProps {
+//   posts: number;
+//   followers: number;
+//   following: number;
+// }
 
 const Profile = () => {
   const { user } = useUserContext();
@@ -23,11 +23,11 @@ const Profile = () => {
   const { data: currentUser } = useGetCurrentUser();
   const { ref, inView } = useInView();
   const { data: posts, fetchNextPage, hasNextPage } = useGetPosts();
-  const [postStatsInfo, setPostStatsinfo] = useState<PostStatsInfoProps>({
-    posts: 0,
-    followers: 0,
-    following: 0,
-  });
+  // const [postStatsInfo, setPostStatsinfo] = useState<PostStatsInfoProps>({
+  //   posts: 0,
+  //   followers: 0,
+  //   following: 0,
+  // });
 
   useEffect(() => {
     if (inView) fetchNextPage();
@@ -100,9 +100,7 @@ const Profile = () => {
 
               <div className="flex gap-4 lg:gap-10 body-small md:body-medium">
                 <p>
-                  <span className="mr-1 lg:mr-2 text-primary-500">
-                    {postStatsInfo.posts}
-                  </span>
+                  <span className="mr-1 lg:mr-2 text-primary-500">10</span>
                   Posts
                 </p>
                 <p>
