@@ -3,42 +3,63 @@ import GridPostList from "@/components/shared/GridPostList";
 import Loader from "@/components/shared/Loader";
 import { Button } from "@/components/ui/button";
 import { useUserContext } from "@/context/AuthContext";
-import {
-  useGetCurrentUser,
-  useGetPosts,
-} from "@/lib/react-query/queriesAndMutations";
-import { useEffect } from "react";
-import { useInView } from "react-intersection-observer";
-import { useNavigate } from "react-router-dom";
-
-// export interface PostStatsInfoProps {
-//   posts: number;
-//   followers: number;
-//   following: number;
-// }
+import { useGetUserById } from "@/lib/react-query/queriesAndMutations";
+// import { checkIsFollowed } from "@/lib/utils";
+// import { useEffect } from "react";
+// import { useInView } from "react-intersection-observer";
+import { useNavigate, useParams } from "react-router-dom";
 
 const Profile = () => {
+  const { id } = useParams();
   const { user } = useUserContext();
+  const { data: currentUser, isRefetching: isLoadingUser } = useGetUserById(
+    id || ""
+  );
   const navigate = useNavigate();
-  const { data: currentUser } = useGetCurrentUser();
-  const { ref, inView } = useInView();
-  const { data: posts, fetchNextPage, hasNextPage } = useGetPosts();
-  // const [postStatsInfo, setPostStatsinfo] = useState<PostStatsInfoProps>({
-  //   posts: 0,
-  //   followers: 0,
-  //   following: 0,
-  // });
+  // const { data: posts, fetchNextPage, hasNextPage } = useGetPosts();
+  // const { ref, inView } = useInView();
+  // const { mutate: followUser } = useFollowUser();
 
-  useEffect(() => {
-    if (inView) fetchNextPage();
-  }, [inView]);
+  // useEffect(() => {
+  //   if (inView) fetchNextPage();
+  // }, [inView]);
 
-  if (!currentUser) {
+  if (!currentUser || isLoadingUser) {
     return <Loader />;
   }
 
+  // const followerList = showUserData?.followers.map(
+  //   (user: Models.Document) => user.$id
+  // );
+
+  // const [postStatsInfo, setPostStatsinfo] = useState({
+  //   posts: 0,
+  //   followers: followerList || [],
+  //   following: 0,
+  // });
+
+  // const handleFollow = (e: React.MouseEvent) => {
+  //   e.stopPropagation();
+
+  //   let newFollower: string[] = [...postStatsInfo.followers];
+
+  //   const hasFollowed = newFollower.includes(currentUser.$id);
+
+  //   if (hasFollowed) {
+  //     newFollower = newFollower.filter((id) => id != currentUser.$id);
+  //   } else {
+  //     newFollower.push(currentUser.$id);
+  //   }
+
+  //   setPostStatsinfo((prevState) => ({
+  //     ...prevState,
+  //     followers: newFollower,
+  //   }));
+  //   followUser({ userId: id || "", followerArray: newFollower });
+  // };
+
   return (
-    <div className="flex flex-1">
+    <div key={id} className="flex flex-1">
       <div className="common-container">
         <div className="flex flex-col w-full max-w-5xl">
           <div className="flex gap-4 lg:gap-8 mb-[69px]">
@@ -68,7 +89,7 @@ const Profile = () => {
                     @{currentUser?.username}
                   </p>
                 </div>
-                {currentUser?.$id == user.id ? (
+                {currentUser?.$id && id == user.id ? (
                   <div className="mt-2">
                     <Button
                       type="button"
@@ -83,9 +104,13 @@ const Profile = () => {
                 ) : (
                   <div className="flex gap-3 mt-2">
                     <Button
+                      // onClick={handleFollow}
                       type="button"
                       className="shad-button_primary whitespace-nowrap"
                     >
+                      {/* {checkIsFollowed(postStatsInfo.followers, currentUser.$id)
+                        ? "Followed"
+                        : "Follow"} */}
                       Follow
                     </Button>
                     <Button
@@ -100,15 +125,21 @@ const Profile = () => {
 
               <div className="flex gap-4 lg:gap-10 body-small md:body-medium">
                 <p>
-                  <span className="mr-1 lg:mr-2 text-primary-500">10</span>
+                  <span className="mr-1 lg:mr-2 text-primary-500">
+                    {/* {postStatsInfo.posts} */}0
+                  </span>
                   Posts
                 </p>
                 <p>
-                  <span className="mr-1 lg:mr-2 text-primary-500">230k</span>
+                  <span className="mr-1 lg:mr-2 text-primary-500">
+                    {/* {postStatsInfo.followers?.length || 0} */}0
+                  </span>
                   Followers
                 </p>
                 <p>
-                  <span className="mr-1 lg:mr-2 text-primary-500">68</span>
+                  <span className="mr-1 lg:mr-2 text-primary-500">
+                    {/* {postStatsInfo.following} */}0
+                  </span>
                   Following
                 </p>
               </div>
@@ -120,22 +151,27 @@ const Profile = () => {
           <FilterPost />
 
           <div className="mt-[57px]">
-            {posts?.pages.map((item, index) => (
+            {/* {posts?.pages.map((post, index) => (
               <GridPostList
                 key={`page-${index}`}
-                posts={item?.documents}
+                posts={post?.documents}
                 showUser={false}
                 showStats={false}
-                forProfile={true}
               />
-            ))}
+            ))} */}
+            <GridPostList
+              // key={`page-${index}`}
+              posts={currentUser.posts}
+              showUser={false}
+              showStats={false}
+            />
           </div>
 
-          {hasNextPage && (
+          {/* {hasNextPage && (
             <div ref={ref} className="mt-10">
               <Loader />
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </div>

@@ -1,5 +1,6 @@
 import { Models } from "appwrite";
 import { Button } from "../ui/button";
+import { Link } from "react-router-dom";
 
 type UserCardProps = {
   creator: Models.Document;
@@ -8,7 +9,10 @@ type UserCardProps = {
 
 const UserCard = ({ creator, desc }: UserCardProps) => {
   return (
-    <div className="flex-center flex-col py-6 post-card w-[190px] h-[190px]">
+    <Link
+      to={`/profile/${creator.$id}`}
+      className="flex-center flex-col py-6 post-card w-[190px] h-[190px]"
+    >
       <img
         src={creator.imageUrl || `/assets/icons/profile-placeholder.svg`}
         alt="creator"
@@ -30,7 +34,7 @@ const UserCard = ({ creator, desc }: UserCardProps) => {
       >
         Follow
       </Button>
-    </div>
+    </Link>
   );
 };
 

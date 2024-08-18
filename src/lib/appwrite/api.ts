@@ -1,11 +1,5 @@
 import { ID, ImageGravity, Query } from "appwrite";
-import {
-  INewComment,
-  INewPost,
-  INewUser,
-  IUpdatePost,
-  IUpdateUser,
-} from "@/types";
+import { INewPost, INewUser, IUpdatePost, IUpdateUser } from "@/types";
 import { account, appwriteConfig, avatars, databases, storage } from "./config";
 
 export async function createUserAccount(user: INewUser) {
@@ -476,12 +470,10 @@ export async function updateUser(user: IUpdateUser) {
     );
 
     if (!updateUser) {
-      // Delete new file that has been recently uploaded
       if (hasFileToUpdate) {
         await deleteFile(user.imageId);
       }
 
-      // If no new file uploaded, just throw error
       throw Error;
     }
 
@@ -495,38 +487,77 @@ export async function updateUser(user: IUpdateUser) {
   }
 }
 
-export async function createComment({ comment, userId, postId }: INewComment) {
+export async function commentPost(
+  postId: string,
+  commentsArray: { userId: string; comments: string }
+) {
+  console.log(commentsArray);
   try {
-    const newComment = await databases.createDocument(
+    const updatedPost = await databases.createDocument(
       appwriteConfig.databaseId,
       appwriteConfig.commentCollectionId,
       ID.unique(),
       {
-        users: userId,
-        comment: comment,
         posts: postId,
+        users: commentsArray.userId,
+        comments: commentsArray.comments,
       }
     );
 
-    if (!newComment) throw Error;
+    if (!updatedPost) throw Error;
 
-    return newComment;
+    return updatedPost;
   } catch (error) {
     console.log(error);
   }
 }
 
-export async function getComments() {
+export async function getUserComment(postId: string) {
   try {
-    const comments = await databases.listDocuments(
+    const getUserComment = await databases.listDocuments(
       appwriteConfig.databaseId,
       appwriteConfig.commentCollectionId,
-      [Query.orderDesc("$createdAt")]
+      [Query.equal("posts", postId)]
     );
 
-    if (!comments) throw Error;
+    if (!getUserComment) throw Error;
 
-    return comments;
+    return getUserComment;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function getUserById(userId: string) {
+  try {
+    const getUserById = await databases.getDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      userId
+    );
+
+    if (!getUserById) throw Error;
+
+    return getUserById;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function followUser(userId: string, followerArray: string[]) {
+  try {
+    const followUser = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      userId,
+      {
+        followers: followerArray,
+      }
+    );
+
+    if (!followUser) throw Error;
+
+    return followUser;
   } catch (error) {
     console.log(error);
   }

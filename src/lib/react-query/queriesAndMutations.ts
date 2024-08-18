@@ -5,17 +5,19 @@ import {
   useInfiniteQuery,
 } from "@tanstack/react-query";
 import {
-  createComment,
+  commentPost,
   createPost,
   createUserAccount,
   deletePost,
   deleteSavedPost,
-  getComments,
+  followUser,
   getCurrentUser,
   getInfinitePosts,
   getPostById,
   getRecentPosts,
   getSavedPosts,
+  getUserById,
+  getUserComment,
   getUsers,
   likePost,
   savePost,
@@ -25,13 +27,7 @@ import {
   updatePost,
   updateUser,
 } from "../appwrite/api";
-import {
-  INewComment,
-  INewPost,
-  INewUser,
-  IUpdatePost,
-  IUpdateUser,
-} from "@/types";
+import { INewPost, INewUser, IUpdatePost, IUpdateUser } from "@/types";
 import { QUERY_KEYS } from "./queryKeys";
 
 export const useCreateUserAccount = () => {
@@ -224,16 +220,64 @@ export const useUpdateUser = () => {
   });
 };
 
-export const useCreateComment = () => {
+export const useCommentPost = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: ({ comment, userId, postId }: INewComment) =>
-      createComment({ comment, userId, postId }),
+    mutationFn: ({
+      postId,
+      commentsArray,
+    }: {
+      postId: string;
+      commentsArray: { userId: string; comments: string };
+    }) => commentPost(postId, commentsArray),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POST_BY_ID, data?.$id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POSTS],
+      });
+    },
   });
 };
 
-export const useGetComments = () => {
+export const useGetUserComment = (postId: string) => {
   return useQuery({
     queryKey: [QUERY_KEYS.GET_COMMENTS],
-    queryFn: () => getComments(),
+    queryFn: () => getUserComment(postId),
+  });
+};
+
+export const useGetUserById = (userId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_USER_BY_ID],
+    queryFn: () => getUserById(userId),
+    enabled: !!userId,
+  });
+};
+
+export const useFollowUser = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      userId,
+      followerArray,
+    }: {
+      userId: string;
+      followerArray: string[];
+    }) => followUser(userId, followerArray),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USERS, data?.$id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_BY_ID],
+      });
+    },
   });
 };

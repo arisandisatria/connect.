@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useUserContext } from "@/context/AuthContext";
 import {
-  useCreateComment,
-  useGetComments,
+  useCommentPost,
   useGetPostById,
+  useGetUserComment,
 } from "@/lib/react-query/queriesAndMutations";
 import { multiFormatDateString } from "@/lib/utils";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,15 +30,13 @@ const formSchema = z.object({
 
 const PostDetail = () => {
   const { id } = useParams();
-  const { mutateAsync: createComment } = useCreateComment();
   const { data: post, isPending } = useGetPostById(id || "");
-  const { data: comments, isPending: isUserCommentsLoading } = useGetComments();
 
+  const { data: comments } = useGetUserComment(id || "");
+  const { mutate: commentPost } = useCommentPost();
   const { user } = useUserContext();
-  const navigate = useNavigate();
   const { toast } = useToast();
 
-  // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -46,7 +44,6 @@ const PostDetail = () => {
     },
   });
 
-  // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!values.comment) {
       return toast({
@@ -55,16 +52,10 @@ const PostDetail = () => {
     }
 
     form.reset();
-
-    const newComment = await createComment({
-      comment: values.comment,
-      userId: user.id,
-      postId: post?.$id,
+    commentPost({
+      postId: post?.$id || "",
+      commentsArray: { userId: user.id, comments: values.comment },
     });
-
-    if (!newComment) return toast({ title: "Please, try again!" });
-
-    navigate(`/posts/${post?.$id}`);
   }
 
   const handleDeletePost = () => {};
@@ -149,42 +140,36 @@ const PostDetail = () => {
               <hr className="border w-full border-dark-4/80 mt-[30px]" />
 
               <div className="flex flex-col flex-2 gap-[20px] h-[300px] pt-[15px] overflow-scroll custom-scrollbar">
-                {isUserCommentsLoading ||
-                !comments ||
-                comments.documents.length === 0 ? (
-                  <Loader />
-                ) : (
-                  comments?.documents.map((item) => {
-                    if (item.posts.$id === post?.$id) {
-                      return (
-                        <div
-                          className="flex gap-2 items-center"
-                          key={`comment-${item.$id}`}
-                        >
-                          <img
-                            src={
-                              item.users.imageUrl ||
-                              "/assets/icons/profile-placeholder.svg"
-                            }
-                            alt="profile"
-                            className="rounded-full w-8 h-8 lg:w-9 lg:h-9 object-cover"
-                          />
-                          <div className="flex flex-col gap-1.5">
-                            <div className="flex gap-[10px] items-center">
-                              <p className="small-semibold text-light-3">
-                                {item.users.name}
-                              </p>
-                              <p className="small-medium">{item.comment}</p>
-                            </div>
-                            <p className="tiny-medium text-light-3">
-                              {multiFormatDateString(item?.$createdAt)}
+                {comments?.documents.map((item: any) => {
+                  if (item.posts.$id === post?.$id) {
+                    return (
+                      <div
+                        className="flex gap-2 items-center"
+                        key={`comment-${item.$id}`}
+                      >
+                        <img
+                          src={
+                            item.users.imageUrl ||
+                            "/assets/icons/profile-placeholder.svg"
+                          }
+                          alt="profile"
+                          className="rounded-full w-8 h-8 lg:w-9 lg:h-9 object-cover"
+                        />
+                        <div className="flex flex-col gap-1.5">
+                          <div className="flex gap-[10px] items-center">
+                            <p className="small-semibold text-light-3">
+                              {item.users.name}
                             </p>
+                            <p className="small-medium">{item.comments}</p>
                           </div>
+                          <p className="tiny-medium text-light-3">
+                            {multiFormatDateString(item?.$createdAt)}
+                          </p>
                         </div>
-                      );
-                    }
-                  })
-                )}
+                      </div>
+                    );
+                  }
+                })}
               </div>
             </div>
 
