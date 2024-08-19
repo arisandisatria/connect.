@@ -10,6 +10,7 @@ import {
   createUserAccount,
   deletePost,
   deleteSavedPost,
+  followingUser,
   followUser,
   getCurrentUser,
   getInfinitePosts,
@@ -271,6 +272,28 @@ export const useFollowUser = () => {
       userId: string;
       followerArray: string[];
     }) => followUser(userId, followerArray),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USERS, data?.$id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_BY_ID],
+      });
+    },
+  });
+};
+
+export const useFollowingUser = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({
+      userId,
+      followingArray,
+    }: {
+      userId: string;
+      followingArray: string[];
+    }) => followingUser(userId, followingArray),
     onSuccess: (data) => {
       queryClient.invalidateQueries({
         queryKey: [QUERY_KEYS.GET_USERS, data?.$id],

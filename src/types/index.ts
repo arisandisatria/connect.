@@ -50,6 +50,7 @@ export type IUser = {
   imageUrl: string;
   imageId?: string;
   bio: string;
+  following: string[];
 };
 
 export type INewUser = {
@@ -57,11 +58,4 @@ export type INewUser = {
   email: string;
   username: string;
   password: string;
-};
-
-export type INewComment = {
-  // likes: number;
-  comment: string;
-  userId: string;
-  postId?: string;
 };

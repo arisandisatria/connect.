@@ -562,3 +562,22 @@ export async function followUser(userId: string, followerArray: string[]) {
     console.log(error);
   }
 }
+
+export async function followingUser(userId: string, followingArray: string[]) {
+  try {
+    const followingUser = await databases.updateDocument(
+      appwriteConfig.databaseId,
+      appwriteConfig.userCollectionId,
+      userId,
+      {
+        following: followingArray,
+      }
+    );
+
+    if (!followingUser) throw Error;
+
+    return followingUser;
+  } catch (error) {
+    console.log(error);
+  }
+}

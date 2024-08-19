@@ -3,8 +3,13 @@ import GridPostList from "@/components/shared/GridPostList";
 import Loader from "@/components/shared/Loader";
 import { Button } from "@/components/ui/button";
 import { useUserContext } from "@/context/AuthContext";
-import { useGetUserById } from "@/lib/react-query/queriesAndMutations";
-// import { checkIsFollowed } from "@/lib/utils";
+import {
+  useFollowingUser,
+  useFollowUser,
+  useGetUserById,
+} from "@/lib/react-query/queriesAndMutations";
+import { useEffect, useState } from "react";
+import { checkIsFollowed } from "@/lib/utils";
 // import { useEffect } from "react";
 // import { useInView } from "react-intersection-observer";
 import { useNavigate, useParams } from "react-router-dom";
@@ -12,51 +17,73 @@ import { useNavigate, useParams } from "react-router-dom";
 const Profile = () => {
   const { id } = useParams();
   const { user } = useUserContext();
-  const { data: currentUser, isRefetching: isLoadingUser } = useGetUserById(
-    id || ""
-  );
   const navigate = useNavigate();
+  const { data: currentUser, refetch } = useGetUserById(id || "");
   // const { data: posts, fetchNextPage, hasNextPage } = useGetPosts();
   // const { ref, inView } = useInView();
-  // const { mutate: followUser } = useFollowUser();
+  const { mutate: followUser } = useFollowUser();
+  const { mutate: followingUser } = useFollowingUser();
+
+  const [postStatsInfo, setPostStatsInfo] = useState<{
+    posts: any[];
+    followers: string[];
+    following: string[];
+  }>({
+    posts: [],
+    followers: [],
+    following: [],
+  });
 
   // useEffect(() => {
   //   if (inView) fetchNextPage();
   // }, [inView]);
 
-  if (!currentUser || isLoadingUser) {
+  useEffect(() => {
+    if (currentUser?.$id != id) {
+      refetch();
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (currentUser) {
+      setPostStatsInfo({
+        posts: currentUser.posts,
+        followers: currentUser.followers,
+        following: currentUser.following,
+      });
+    }
+  }, [currentUser]);
+
+  if (!currentUser || currentUser?.$id != id) {
     return <Loader />;
   }
 
-  // const followerList = showUserData?.followers.map(
-  //   (user: Models.Document) => user.$id
-  // );
+  const handleFollow = () => {
+    const hasFollowed = currentUser.followers.includes(user.id);
 
-  // const [postStatsInfo, setPostStatsinfo] = useState({
-  //   posts: 0,
-  //   followers: followerList || [],
-  //   following: 0,
-  // });
+    let newFollowers, newFollowing;
 
-  // const handleFollow = (e: React.MouseEvent) => {
-  //   e.stopPropagation();
+    if (hasFollowed) {
+      newFollowers = currentUser.followers.filter(
+        (followerId: string) => followerId !== user.id
+      );
+      newFollowing = user.following.filter(
+        (followingId: string) => followingId !== currentUser.$id
+      );
+    } else {
+      newFollowers = [...new Set([...currentUser.followers, user.id])];
+      newFollowing = [...new Set([...user.following, currentUser.$id])];
+    }
 
-  //   let newFollower: string[] = [...postStatsInfo.followers];
+    setPostStatsInfo((prevState) => ({
+      ...prevState,
+      followers: newFollowers,
+      following: newFollowing,
+    }));
 
-  //   const hasFollowed = newFollower.includes(currentUser.$id);
-
-  //   if (hasFollowed) {
-  //     newFollower = newFollower.filter((id) => id != currentUser.$id);
-  //   } else {
-  //     newFollower.push(currentUser.$id);
-  //   }
-
-  //   setPostStatsinfo((prevState) => ({
-  //     ...prevState,
-  //     followers: newFollower,
-  //   }));
-  //   followUser({ userId: id || "", followerArray: newFollower });
-  // };
+    followUser({ userId: id || "", followerArray: newFollowers });
+    followingUser({ userId: user.id || "", followingArray: newFollowing });
+  };
 
   return (
     <div key={id} className="flex flex-1">
@@ -104,14 +131,13 @@ const Profile = () => {
                 ) : (
                   <div className="flex gap-3 mt-2">
                     <Button
-                      // onClick={handleFollow}
+                      onClick={handleFollow}
                       type="button"
                       className="shad-button_primary whitespace-nowrap"
                     >
-                      {/* {checkIsFollowed(postStatsInfo.followers, currentUser.$id)
+                      {checkIsFollowed(currentUser?.followers, user.id)
                         ? "Followed"
-                        : "Follow"} */}
-                      Follow
+                        : "Follow"}
                     </Button>
                     <Button
                       type="button"
@@ -126,19 +152,19 @@ const Profile = () => {
               <div className="flex gap-4 lg:gap-10 body-small md:body-medium">
                 <p>
                   <span className="mr-1 lg:mr-2 text-primary-500">
-                    {/* {postStatsInfo.posts} */}0
+                    {postStatsInfo.posts.length}
                   </span>
                   Posts
                 </p>
                 <p>
                   <span className="mr-1 lg:mr-2 text-primary-500">
-                    {/* {postStatsInfo.followers?.length || 0} */}0
+                    {postStatsInfo.followers.length}
                   </span>
                   Followers
                 </p>
                 <p>
                   <span className="mr-1 lg:mr-2 text-primary-500">
-                    {/* {postStatsInfo.following} */}0
+                    {postStatsInfo.following.length}
                   </span>
                   Following
                 </p>

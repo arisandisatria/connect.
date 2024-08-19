@@ -23,6 +23,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useToast } from "@/components/ui/use-toast";
+import { useEffect, useState } from "react";
 
 const formSchema = z.object({
   comment: z.string().max(2200),
@@ -30,12 +31,16 @@ const formSchema = z.object({
 
 const PostDetail = () => {
   const { id } = useParams();
-  const { data: post, isPending } = useGetPostById(id || "");
-
-  const { data: comments } = useGetUserComment(id || "");
-  const { mutate: commentPost } = useCommentPost();
   const { user } = useUserContext();
   const { toast } = useToast();
+  const { data: post, isPending } = useGetPostById(id || "");
+  const {
+    data: commentsData,
+    isFetched,
+    isFetching,
+  } = useGetUserComment(id || "");
+  const { mutate: commentPost } = useCommentPost();
+  const [comments, setComments] = useState<any[]>([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,6 +48,19 @@ const PostDetail = () => {
       comment: "",
     },
   });
+
+  useEffect(() => {
+    if (isFetched && commentsData) {
+      const filteredComments = commentsData.documents.map((item: any) => ({
+        userId: item.users.$id,
+        userName: item.users.name,
+        userImageUrl: item.users.imageUrl,
+        comment: item.comments,
+        createdAt: item.$createdAt,
+      }));
+      setComments(filteredComments);
+    }
+  }, [commentsData, isFetched, id]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!values.comment) {
@@ -52,6 +70,17 @@ const PostDetail = () => {
     }
 
     form.reset();
+
+    const newComment = {
+      userId: user.id,
+      userName: user.name,
+      userImageUrl: user.imageUrl,
+      comment: values.comment,
+      createdAt: new Date().toISOString(),
+    };
+
+    setComments((prevComments) => [newComment, ...prevComments]);
+
     commentPost({
       postId: post?.$id || "",
       commentsArray: { userId: user.id, comments: values.comment },
@@ -140,36 +169,36 @@ const PostDetail = () => {
               <hr className="border w-full border-dark-4/80 mt-[30px]" />
 
               <div className="flex flex-col flex-2 gap-[20px] h-[300px] pt-[15px] overflow-scroll custom-scrollbar">
-                {comments?.documents.map((item: any) => {
-                  if (item.posts.$id === post?.$id) {
-                    return (
-                      <div
-                        className="flex gap-2 items-center"
-                        key={`comment-${item.$id}`}
-                      >
-                        <img
-                          src={
-                            item.users.imageUrl ||
-                            "/assets/icons/profile-placeholder.svg"
-                          }
-                          alt="profile"
-                          className="rounded-full w-8 h-8 lg:w-9 lg:h-9 object-cover"
-                        />
-                        <div className="flex flex-col gap-1.5">
-                          <div className="flex gap-[10px] items-center">
-                            <p className="small-semibold text-light-3">
-                              {item.users.name}
-                            </p>
-                            <p className="small-medium">{item.comments}</p>
-                          </div>
-                          <p className="tiny-medium text-light-3">
-                            {multiFormatDateString(item?.$createdAt)}
+                {isFetching ? (
+                  <Loader />
+                ) : (
+                  comments.map((item, index) => (
+                    <div
+                      className="flex gap-2 items-center"
+                      key={`comment-${index}`}
+                    >
+                      <img
+                        src={
+                          item.userImageUrl ||
+                          "/assets/icons/profile-placeholder.svg"
+                        }
+                        alt="profile"
+                        className="rounded-full w-8 h-8 lg:w-9 lg:h-9 object-cover"
+                      />
+                      <div className="flex flex-col gap-1.5">
+                        <div className="flex gap-[10px] items-center">
+                          <p className="small-semibold text-light-3">
+                            {item.userName}
                           </p>
+                          <p className="small-medium">{item.comment}</p>
                         </div>
+                        <p className="tiny-medium text-light-3">
+                          {multiFormatDateString(item.createdAt)}
+                        </p>
                       </div>
-                    );
-                  }
-                })}
+                    </div>
+                  ))
+                )}
               </div>
             </div>
 
