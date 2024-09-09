@@ -1,11 +1,20 @@
 import FilterPost from "@/components/shared/FilterPost";
 import GridPostList from "@/components/shared/GridPostList";
 import Loader from "@/components/shared/Loader";
-import { useGetSavedPosts } from "@/lib/react-query/queriesAndMutations";
+import { useGetCurrentUser } from "@/lib/react-query/queriesAndMutations";
+import { Models } from "appwrite";
 
 const Saved = () => {
-  const { data: savedPosts, isPending: isSavedPostsLoading } =
-    useGetSavedPosts();
+  const { data: currentUser } = useGetCurrentUser();
+
+  const savePosts = currentUser?.saves
+    .map((savePost: Models.Document) => ({
+      ...savePost.post,
+      creator: {
+        imageUrl: currentUser.imageUrl,
+      },
+    }))
+    .reverse();
 
   return (
     <div className="flex flex-1">
@@ -23,17 +32,21 @@ const Saved = () => {
 
         <FilterPost isProfile={false} />
 
-        <div className="flex flex-wrap gap-9 w-full max-w-5xl">
-          {!savedPosts && isSavedPostsLoading ? (
-            <Loader />
-          ) : (
-            <GridPostList
-              posts={savedPosts?.documents}
-              showUser={false}
-              showStats={false}
-            />
-          )}
-        </div>
+        {!currentUser ? (
+          <Loader />
+        ) : (
+          <ul className="w-full flex flex-wrap justify-center max-w-5xl gap-9">
+            {savePosts.length === 0 ? (
+              <p className="text-light-4">No available posts</p>
+            ) : (
+              <GridPostList
+                posts={savePosts}
+                showStats={false}
+                showUser={false}
+              />
+            )}
+          </ul>
+        )}
       </div>
     </div>
   );

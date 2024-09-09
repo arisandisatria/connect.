@@ -5,6 +5,7 @@ import { useSignOutAccount } from "@/lib/react-query/queriesAndMutations";
 import { useUserContext } from "@/context/AuthContext";
 import { sidebarLinks } from "@/constants";
 import { INavLink } from "@/types";
+import Loader from "./Loader";
 
 const LeftSideBar = () => {
   const { pathname } = useLocation();
@@ -27,17 +28,22 @@ const LeftSideBar = () => {
             height={36}
           />
         </Link>
-        <Link to={`/profile/${user.id}`} className="flex gap-3 items-center">
-          <img
-            src={user.imageUrl || "/assets/icons/profile-placeholder.svg"}
-            alt="profile"
-            className="h-14 w-14 rounded-full object-cover"
-          />
-          <div className="flex flex-col">
-            <p className="body-bold">{user.name}</p>
-            <p className="small-regular text-light-3">@{user.username}</p>
-          </div>
-        </Link>
+        {user.id && user.name && user.username && user.imageUrl ? (
+          <Link to={`/profile/${user.id}`} className="flex gap-3 items-center">
+            <img
+              src={user.imageUrl || "/assets/icons/profile-placeholder.svg"}
+              alt="profile"
+              className="h-14 w-14 rounded-full object-cover"
+            />
+            <div className="flex flex-col">
+              <p className="body-bold">{user.name}</p>
+              <p className="small-regular text-light-3">@{user.username}</p>
+            </div>
+          </Link>
+        ) : (
+          <Loader />
+        )}
+
         <ul className="flex flex-col gap-6">
           {sidebarLinks.map((link: INavLink) => {
             const isActive = pathname === link.route;
@@ -68,11 +74,15 @@ const LeftSideBar = () => {
         </ul>
       </div>
       <Button
-        variant="ghost"
-        className="shad-button_ghost"
+        variant={"destructive"}
+        className="group flex gap-4 p-4 items-center justify-start hover:bg-red"
         onClick={() => signOut()}
       >
-        <img src="/assets/icons/logout.svg" alt="logout" />
+        <img
+          src="/assets/icons/logout.svg"
+          alt="logout"
+          className="group-hover:invert group-hover:brightness-0 transition"
+        />
         <p className="small-medium lg:base-medium">Logout</p>
       </Button>
     </nav>

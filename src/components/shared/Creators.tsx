@@ -16,7 +16,7 @@ const Creators = () => {
         <ul className="grid mt-10 gap-6 grid-cols-2">
           {creators?.documents.map((creator: Models.Document) => (
             <li key={creator.$id}>
-              <UserCard creator={creator} />
+              <UserCard creator={creator} desc={creator.username} />
             </li>
           ))}
         </ul>

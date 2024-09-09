@@ -86,7 +86,7 @@ const Profile = () => {
   };
 
   return (
-    <div key={id} className="flex flex-1">
+    <div className="flex flex-1">
       <div className="common-container">
         <div className="flex flex-col w-full max-w-5xl">
           <div className="flex gap-4 lg:gap-8 mb-[69px]">
@@ -141,7 +141,7 @@ const Profile = () => {
                     </Button>
                     <Button
                       type="button"
-                      className="shad-button_primary whitespace-nowrap !bg-white !text-dark-2"
+                      className="shad-button_primary whitespace-nowrap !text-dark-2 !bg-white hover:!text-white"
                     >
                       Message
                     </Button>
