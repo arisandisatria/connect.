@@ -89,13 +89,13 @@ const Profile = () => {
     <div className="flex flex-1">
       <div className="common-container">
         <div className="flex flex-col w-full max-w-5xl">
-          <div className="flex gap-4 lg:gap-8 mb-[69px]">
+          <div className="flex gap-4 lg:gap-8 mb-8 md:b-[69px]">
             <img
               src={
                 currentUser?.imageUrl || "/assets/icons/profile-placeholder.svg"
               }
               alt="profile"
-              className="w-[222px] h-[130px] lg:w-[150px] lg:h-[150px] object-cover rounded-full"
+              className="w-[100px] h-[48px] md:w-[150px] md:h-[150px] object-cover rounded-full"
             />
 
             <div className="flex flex-col gap-[22px]">

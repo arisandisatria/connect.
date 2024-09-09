@@ -108,18 +108,17 @@ const PostDetail = () => {
                     "assets/icon/profile-placeholder.svg"
                   }
                   alt="creator"
-                  className="rounded-full w-8 h-8 lg:w-12 lg:h-12 object-cover"
+                  className="rounded-full w-11 h-11 lg:w-12 lg:h-12 object-cover"
                 />
 
-                <div className="flex flex-col">
+                <div className="flex flex-col gap-1">
                   <p className="base-medium lg:body-bold text-light-1">
                     {post?.creator.name}
                   </p>
-                  <div className="flex-center gap-2 text-light-3">
+                  <div className="flex flex-col gap-1 md:gap-2 text-light-3">
                     <p className="subtle-semibold lg:small-regular">
                       {multiFormatDateString(post?.$createdAt)}
                     </p>
-                    -
                     <p className="subtle-semibold lg:small-regular">
                       {post?.location}
                     </p>
@@ -140,9 +139,10 @@ const PostDetail = () => {
                   />
                 </Link>
                 <Button
+                  size={"sm"}
                   variant="ghost"
                   onClick={handleDeletePost}
-                  className={`ghost_details-delete_btn ${
+                  className={`pr-0 ${
                     user.id !== post?.creator.$id && "hidden"
                   }`}
                 >
@@ -166,7 +166,7 @@ const PostDetail = () => {
                 ))}
               </ul>
 
-              <hr className="border w-full border-dark-4/80 mt-[30px]" />
+              <hr className="border w-full border-dark-4/80 mt-[10px] md:mt-[30px]" />
 
               <div className="flex flex-col flex-2 gap-[20px] h-[300px] pt-[15px] overflow-scroll custom-scrollbar">
                 {isFetching ? (
